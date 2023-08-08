@@ -1,0 +1,36 @@
+function getDnsAnswer(fqdn, type=1) {
+    $url = "https://cloudflare-dns.com/dns-query"
+    $mime = "application/dns-json"
+
+    $params = $lib.dict(name=$fqdn)
+    $headers = $lib.dict(Accept="application/dns-json")
+
+    if ( $type ) {
+        $headers.type = $type
+    }
+
+    $resp = $lib.inet.http.get($url, params=$params, headers=$headers)
+
+    if ( $resp.code = 200 ) {
+        $data = $resp.json()
+        return $data.Answer
+    }
+    else {
+        if ( $resp.code = -1 ) {
+            $lib.log.error(`An exception occurred querying Cloudflare DoH service: {$resp.err}`)
+        }
+        else {
+            $lib.log.warn(`An HTTP error was reutrned by Cloudflare's DoH service: {$resp.code}`)
+        }
+    }
+
+    // Return an empty list if we got no answer
+    return $lib.list()
+}
+
+function getAnswer(answer, type=1) {
+    switch $type {
+        1: { [ inet:dns:a=($answer.name, $answer.data) ] }
+        *: { $lib.log.info(`getAnswer does not support the DNS query type {$type}`) }
+    }
+}

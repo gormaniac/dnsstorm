@@ -1,0 +1,39 @@
+name: dns-storm
+version: 0.0.1
+guid: 55d397b5e6b5042077105ec0c803ab5e
+
+synapse_minversion: [2, 137, 0]
+
+genopts:
+    dotstorm: true
+
+author:
+  url: https://github.com/gormaniac
+  name: John Gorman
+
+desc: A Rapid Power-Up that provides DNS over HTTPS using Cloudflare's 1.1.1.1 service.
+
+modules:
+  - name: gormo.dns.lib
+
+commands:
+  - name: gormo.dns
+    descr: |
+      Query Cloudflare's DNS over HTTPS service for the input inet:fqdn nodes.
+
+      Yields inet:dns:a nodes.
+
+      Examples:
+
+        inet:fqdn | limit 5 | gormo.dns
+
+        gormo.dns --query google.com :ipv4 -> inet:ipv4
+
+    cmdargs:
+      - - --query
+        - type: str
+          default: ''
+          help: |
+            An FQDN string to query for.
+
+            Ignores any nodes in the pipeline and uses the string passed to this arg.

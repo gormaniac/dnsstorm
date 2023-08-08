@@ -1,0 +1,16 @@
+init {
+    $dnslib = $lib.import(gormo.dns.lib)
+    $query = $cmdopts.query
+}
+
+if ( $query ) {
+    $answers = $dnslib.getDnsAnswer($query)
+
+    for $answer in $answers {
+        $dnslib.ingestAnswer($answer)
+    }
+}
+else {
+    // Handle inbound nodes here
+    $lib.print("This command cannot handle inbound nodes yet - use --query.")
+}
