@@ -1,19 +1,19 @@
+// Storm code for making and ingesting DNS queries using Cloudflare's DoH service.
+
+$queryTypes = $lib.dict(A=1, AAAA=28, CNAME=5, MX=15, NS=2, PTR=12, TXT=16)
+
 function getDnsAnswer(fqdn, type=1) {
     $url = "https://cloudflare-dns.com/dns-query"
     $mime = "application/dns-json"
 
-    $params = $lib.dict(name=$fqdn)
+    $params = $lib.dict(name=$fqdn, type=$type)
     $headers = $lib.dict(Accept="application/dns-json")
-
-    if ( $type ) {
-        $headers.type = $type
-    }
 
     $resp = $lib.inet.http.get($url, params=$params, headers=$headers)
 
     if ( $resp.code = 200 ) {
         $data = $resp.json()
-        return $data.Answer
+        return($data.Answer)
     }
     else {
         if ( $resp.code = -1 ) {
@@ -25,14 +25,54 @@ function getDnsAnswer(fqdn, type=1) {
     }
 
     // Return an empty list if we got no answer
-    return $lib.list()
+    return($lib.list())
 }
 
 // TODO create inet:dns:answer nodes for everything instead
-function getAnswer(answer, query) {
+function ingestAnswer(answer, query, qtime) {
+    [
+        inet:dns:answer=($query, $answer.type, $answer.name, $answer.data, $qtime)
+        :ttl=$answer.TTL
+        // For now using slightly different seeds so we don't get the same GUID for both nodes - maybe change this?
+        :request={[( inet:dns:request=($query, $answer.data, $qtime) :time=$qtime :query:name=$query )]}
+        // TODO - this isn't supported until Synapse v2.144 or later
+        // :time=$qtime
+    ]
 
-    switch $type {
-        1: { [ inet:dns:a=($answer.name, $answer.data) ] }
-        *: { $lib.log.info(`getAnswer does not support the DNS query type {$type}`) }
+    switch $answer.type {
+        1: { [ :a=($answer.name, $answer.data) ] }
+        28: { [ :aaaa=($answer.name, $answer.data) ] }
+        5: { [ :cname=($answer.name, $answer.data) ] }
+        15: {
+            ($pri, $name) = $answer.data.split(" ")
+            [ :mx=($answer.name, $name) ]
+            [ :mx:priority=$pri ]
+        }
+        2: { [ :ns=($answer.name, $answer.data) ] }
+        // TODO - We need to account for both ipv4 and ipv6 here - right now we just assume ipv4...
+        12: { $lib.print($answer.data) [ :rev?=($answer.name, $answer.data) ] }
+        16: { [ :txt?=($answer.name, $answer.data) ] }
+        *: { $lib.log.info(`getAnswer does not support the DNS query type {$answer.type}`) }
     }
+
+    return($node)
+}
+
+function doQuery(query, type="A") {
+    $answers = $lib.set()
+    $qtime = $lib.time.now()
+
+    $typeNum = $queryTypes.$type
+    if ($typeNum = $lib.null) {
+        $lib.log.warning(`Invalid DNS query type passed to gormo.dns.lib.query {$type}`)
+        stop
+    }
+
+    $dnsResponses = $getDnsAnswer($query, type=$typeNum)
+
+    for $dnsAnswer in $dnsResponses {
+        emit $ingestAnswer($dnsAnswer, $query, $qtime)
+    }
+
+    stop
 }

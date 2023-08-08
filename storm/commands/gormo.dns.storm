@@ -1,22 +1,21 @@
 init {
     $dnslib = $lib.import(gormo.dns.lib)
+    // TODO - cast query to an inet:fqdn (or an inet:ipv4 for ptr?) so we can error on bad input
     $query = $cmdopts.query
+    // TODO - validate type on init
     $type = $cmdopts.type
 }
 
-if ( $query ) {
+if ( $query != '' ) {
+    // We spin when --query is used because this isn't meant to accept inbound nodes.
     | spin |
 
-    $answers = $dnslib.getDnsAnswer($query, type=$type)
-
-    for $answer in $answers {
-        $dnslib.ingestAnswer($answer, $query)
+    // TODO - Make the yields optional
+    for $answer in $dnslib.doQuery($query, type=$type) {
+        yield $answer
     }
-
-    // Return immediately so we can enforce the singularity of this option
-    return $lib.null
 }
 else {
-    // Handle inbound nodes here
+    // TODO - Handle inbound nodes here
     $lib.print("This command cannot handle inbound nodes yet - use --query.")
 }

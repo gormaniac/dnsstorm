@@ -25,9 +25,9 @@ commands:
 
       Examples:
 
-        inet:fqdn | limit 5 | gormo.dns
+        inet:fqdn | limit 5 | gormo.dns --type AAAA
 
-        gormo.dns --query google.com :ipv4 -> inet:ipv4
+        gormo.dns --query google.com :a -> inet:dns:a :ipv4 -> inet:ipv4
 
     cmdargs:
       - - --query
@@ -39,13 +39,13 @@ commands:
             Ignores any nodes in the pipeline and uses the string passed to this arg.
 
       - - --type
-        - type: int
-          default: 1
+        - type: str
+          default: A
           help: |
-            The type of DNS query to make, as an integer.
+            The type of DNS query to make (A, TXT, NS, etc.).
 
-            Defaults to 1 - DNS A records. See the mapping of supported query
-            types in the `gormo.dns.lib.storm` file. See the following link for
-            further information on DNS query types:
+            Defaults to DNS A records. See the mapping of supported query
+            types in the `gormo.dns.lib.storm` file.
+            
+            See the following link for further information on DNS query types:
             https://en.wikipedia.org/wiki/List_of_DNS_record_types
-
