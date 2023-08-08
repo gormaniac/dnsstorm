@@ -28,7 +28,6 @@ function getDnsAnswer(fqdn, type=1) {
     return($lib.list())
 }
 
-// TODO create inet:dns:answer nodes for everything instead
 function ingestAnswer(answer, query, qtime) {
     [
         inet:dns:answer=($query, $answer.type, $answer.name, $answer.data, $qtime)
@@ -49,8 +48,16 @@ function ingestAnswer(answer, query, qtime) {
             [ :mx:priority=$pri ]
         }
         2: { [ :ns=($answer.name, $answer.data) ] }
-        // TODO - We need to account for both ipv4 and ipv6 here - right now we just assume ipv4...
-        12: { $lib.print($answer.data) [ :rev?=($answer.name, $answer.data) ] }
+        // TODO - For some reason I'm only getting SOA responses back from Cloudflare when making PTR queries
+        12: {
+            ($ok, $ipv4) = $lib.trycast(inet:ipv4, $answer.data)
+            if $ok {
+                [ :rev?=($answer.name, $answer.data) ]
+            }
+            else {
+                [ :rev6?=($answer.name, $answer.data) ]
+            }
+        }
         16: { [ :txt?=($answer.name, $answer.data) ] }
         *: { $lib.log.info(`getAnswer does not support the DNS query type {$answer.type}`) }
     }

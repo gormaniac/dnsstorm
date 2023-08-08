@@ -6,7 +6,7 @@ dirname = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 class DnsStormTest(s_test.StormPkgTest):
 
-    assetdir = os.path.join(dirname, 'testassets')
+    assetdir = os.path.join(dirname, 'tests/testassets')
     pkgprotos = (os.path.join(dirname, 'dnsstorm.yaml'),)
 
     async def test_dns_queries(self):
