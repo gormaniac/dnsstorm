@@ -4,7 +4,7 @@
     "url": "https://github.com/gormaniac"
   },
   "build": {
-    "time": 1691526753511
+    "time": 1691526954301
   },
   "commands": [
     {
@@ -42,7 +42,7 @@
   "name": "dns-storm",
   "synapse_minversion": [
     2,
-    137,
+    127,
     0
   ],
   "version": "0.0.1"

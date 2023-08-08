@@ -2,7 +2,7 @@ name: dns-storm
 version: 0.0.1
 guid: 55d397b5e6b5042077105ec0c803ab5e
 
-synapse_minversion: [2, 137, 0]
+synapse_minversion: [2, 127, 0]
 
 genopts:
     dotstorm: true
