@@ -1,0 +1,49 @@
+{
+  "author": {
+    "name": "John Gorman",
+    "url": "https://github.com/gormaniac"
+  },
+  "build": {
+    "time": 1691526753511
+  },
+  "commands": [
+    {
+      "cmdargs": [
+        [
+          "--query",
+          {
+            "default": "",
+            "help": "An FQDN string to query for.\n\nIgnores any nodes in the pipeline and uses the string passed to this arg.\n",
+            "type": "str"
+          }
+        ],
+        [
+          "--type",
+          {
+            "default": "A",
+            "help": "The type of DNS query to make (A, TXT, NS, etc.).\n\nDefaults to DNS A records. See the mapping of supported query\ntypes in the `gormo.dns.lib.storm` file.\n\nSee the following link for further information on DNS query types:\nhttps://en.wikipedia.org/wiki/List_of_DNS_record_types\n",
+            "type": "str"
+          }
+        ]
+      ],
+      "descr": "Query Cloudflare's DNS over HTTPS service for the input FQDNs.\n\nYields inet:dns:answer nodes.\n\nExamples:\n\n  inet:fqdn | limit 5 | gormo.dns --type AAAA\n\n  gormo.dns --query google.com :a -> inet:dns:a :ipv4 -> inet:ipv4\n",
+      "name": "gormo.dns",
+      "storm": "init {\n    $dnslib = $lib.import(gormo.dns.lib)\n    // TODO - cast query to an inet:fqdn (or an inet:ipv4 for ptr?) so we can error on bad input\n    $query = $cmdopts.query\n    // TODO - validate type on init\n    $type = $cmdopts.type\n}\n\nif ( $query != '' ) {\n    // We spin when --query is used because this isn't meant to accept inbound nodes.\n    | spin |\n\n    // TODO - Make the yields optional\n    for $answer in $dnslib.doQuery($query, type=$type) {\n        yield $answer\n    }\n}\nelse {\n    // TODO - Handle inbound nodes here\n    $lib.print(\"This command cannot handle inbound nodes yet - use --query.\")\n}\n"
+    }
+  ],
+  "desc": "A Rapid Power-Up that provides DNS over HTTPS using Cloudflare's 1.1.1.1 service.",
+  "guid": "55d397b5e6b5042077105ec0c803ab5e",
+  "modules": [
+    {
+      "name": "gormo.dns.lib",
+      "storm": "// Storm code for making and ingesting DNS queries using Cloudflare's DoH service.\n\n$queryTypes = $lib.dict(A=1, AAAA=28, CNAME=5, MX=15, NS=2, PTR=12, TXT=16)\n\nfunction getDnsAnswer(fqdn, type=1) {\n    $url = \"https://cloudflare-dns.com/dns-query\"\n    $mime = \"application/dns-json\"\n\n    $params = $lib.dict(name=$fqdn, type=$type)\n    $headers = $lib.dict(Accept=\"application/dns-json\")\n\n    $resp = $lib.inet.http.get($url, params=$params, headers=$headers)\n\n    if ( $resp.code = 200 ) {\n        $data = $resp.json()\n        return($data.Answer)\n    }\n    else {\n        if ( $resp.code = -1 ) {\n            $lib.log.error(`An exception occurred querying Cloudflare DoH service: {$resp.err}`)\n        }\n        else {\n            $lib.log.warn(`An HTTP error was reutrned by Cloudflare's DoH service: {$resp.code}`)\n        }\n    }\n\n    // Return an empty list if we got no answer\n    return($lib.list())\n}\n\nfunction ingestAnswer(answer, query, qtime) {\n    [\n        inet:dns:answer=($query, $answer.type, $answer.name, $answer.data, $qtime)\n        :ttl=$answer.TTL\n        // For now using slightly different seeds so we don't get the same GUID for both nodes - maybe change this?\n        :request={[( inet:dns:request=($query, $answer.data, $qtime) :time=$qtime :query:name=$query )]}\n        // TODO - this isn't supported until Synapse v2.144 or later\n        // :time=$qtime\n    ]\n\n    switch $answer.type {\n        1: { [ :a=($answer.name, $answer.data) ] }\n        28: { [ :aaaa=($answer.name, $answer.data) ] }\n        5: { [ :cname=($answer.name, $answer.data) ] }\n        15: {\n            ($pri, $name) = $answer.data.split(\" \")\n            [ :mx=($answer.name, $name) ]\n            [ :mx:priority=$pri ]\n        }\n        2: { [ :ns=($answer.name, $answer.data) ] }\n        // TODO - For some reason I'm only getting SOA responses back from Cloudflare when making PTR queries\n        12: {\n            ($ok, $ipv4) = $lib.trycast(inet:ipv4, $answer.data)\n            if $ok {\n                [ :rev?=($answer.name, $answer.data) ]\n            }\n            else {\n                [ :rev6?=($answer.name, $answer.data) ]\n            }\n        }\n        16: { [ :txt?=($answer.name, $answer.data) ] }\n        *: { $lib.log.info(`getAnswer does not support the DNS query type {$answer.type}`) }\n    }\n\n    return($node)\n}\n\nfunction doQuery(query, type=\"A\") {\n    $answers = $lib.set()\n    $qtime = $lib.time.now()\n\n    $typeNum = $queryTypes.$type\n    if ($typeNum = $lib.null) {\n        $lib.log.warning(`Invalid DNS query type passed to gormo.dns.lib.query {$type}`)\n        stop\n    }\n\n    $dnsResponses = $getDnsAnswer($query, type=$typeNum)\n\n    for $dnsAnswer in $dnsResponses {\n        emit $ingestAnswer($dnsAnswer, $query, $qtime)\n    }\n\n    stop\n}\n"
+    }
+  ],
+  "name": "dns-storm",
+  "synapse_minversion": [
+    2,
+    137,
+    0
+  ],
+  "version": "0.0.1"
+}
