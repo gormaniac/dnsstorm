@@ -1,14 +1,20 @@
 init {
     $dnslib = $lib.import(gormo.dns.lib)
     $query = $cmdopts.query
+    $type = $cmdopts.type
 }
 
 if ( $query ) {
-    $answers = $dnslib.getDnsAnswer($query)
+    | spin |
+
+    $answers = $dnslib.getDnsAnswer($query, type=$type)
 
     for $answer in $answers {
-        $dnslib.ingestAnswer($answer)
+        $dnslib.ingestAnswer($answer, $query)
     }
+
+    // Return immediately so we can enforce the singularity of this option
+    return $lib.null
 }
 else {
     // Handle inbound nodes here

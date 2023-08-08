@@ -19,9 +19,9 @@ modules:
 commands:
   - name: gormo.dns
     descr: |
-      Query Cloudflare's DNS over HTTPS service for the input inet:fqdn nodes.
+      Query Cloudflare's DNS over HTTPS service for the input FQDNs.
 
-      Yields inet:dns:a nodes.
+      Yields inet:dns:answer nodes.
 
       Examples:
 
@@ -37,3 +37,15 @@ commands:
             An FQDN string to query for.
 
             Ignores any nodes in the pipeline and uses the string passed to this arg.
+
+      - - --type
+        - type: int
+          default: 1
+          help: |
+            The type of DNS query to make, as an integer.
+
+            Defaults to 1 - DNS A records. See the mapping of supported query
+            types in the `gormo.dns.lib.storm` file. See the following link for
+            further information on DNS query types:
+            https://en.wikipedia.org/wiki/List_of_DNS_record_types
+

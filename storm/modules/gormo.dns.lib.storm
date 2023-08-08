@@ -28,7 +28,9 @@ function getDnsAnswer(fqdn, type=1) {
     return $lib.list()
 }
 
-function getAnswer(answer, type=1) {
+// TODO create inet:dns:answer nodes for everything instead
+function getAnswer(answer, query) {
+
     switch $type {
         1: { [ inet:dns:a=($answer.name, $answer.data) ] }
         *: { $lib.log.info(`getAnswer does not support the DNS query type {$type}`) }
