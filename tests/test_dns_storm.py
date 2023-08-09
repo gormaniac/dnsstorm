@@ -19,8 +19,8 @@ class DnsStormTest(s_test.StormPkgTest):
                 "gormo.dns --query google.com --type MX",
                 "gormo.dns --query google.com --type TXT",
                 "gormo.dns --query google.com --type AAAA",
+                "gormo.dns --query 1.1.1.1 --type PTR",
                 # TODO Get working examples of these
-                # "gormo.dns --query dns.google --type PTR",
                 # "gormo.dns --query google.com --type CNAME",
             ]
 
