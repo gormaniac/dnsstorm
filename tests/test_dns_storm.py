@@ -17,9 +17,9 @@ class DnsStormTest(s_test.StormPkgTest):
                 "gormo.dns --query google.com",
                 "gormo.dns --query google.com --type NS",
                 "gormo.dns --query google.com --type MX",
-                "gormo.dns --query google.com --type TXT",
+                "[inet:fqdn=google.com] | gormo.dns --type TXT",
                 "gormo.dns --query google.com --type AAAA",
-                "gormo.dns --query 1.1.1.1 --type PTR",
+                "[inet:ipv4=1.1.1.1 inet:ipv4=8.8.8.8] | gormo.dns --type PTR",
                 # TODO Get working examples of these
                 # "gormo.dns --query google.com --type CNAME",
             ]

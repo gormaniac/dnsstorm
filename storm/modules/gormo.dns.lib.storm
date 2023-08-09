@@ -57,6 +57,7 @@ function ingestAnswer(answer, query, qtime) {
             [ :mx:priority=$pri ]
         }
         2: { [ :ns=($answer.name, $answer.data) ] }
+        // TODO - Update the :dns:rev prop of the inet:ipv4/6 nodes
         12: {
             ($ok, $_) = $lib.trycast(inet:ipv4, $query)
             $ip = $answer.name.rstrip(".in-addr.arpa")

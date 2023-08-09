@@ -25,9 +25,15 @@ commands:
 
       Examples:
 
+        // Lift some inet:fqdn nodes and query their AAAA records
         inet:fqdn | limit 5 | gormo.dns --type AAAA
 
-        gormo.dns --query google.com :a -> inet:dns:a :ipv4 -> inet:ipv4
+        // Make a DNS query using string input and then pivot to the inet:ipv4
+        // nodes corresponding to the DNS A records in the query's response
+        gormo.dns --query google.com | :a -> inet:dns:a :ipv4 -> inet:ipv4
+
+        // Lift an inet:ipv4 and make a reverse DNS query
+        inet:ipv4=1.1.1.1 | gormo.dns --type PTR
 
     cmdargs:
       - - --query
