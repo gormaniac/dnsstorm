@@ -1,5 +1,5 @@
 name: dns-storm
-version: 0.0.2
+version: 0.1.0
 guid: 55d397b5e6b5042077105ec0c803ab5e
 
 synapse_minversion: [2, 127, 0]
