@@ -81,7 +81,7 @@ function doQuery(query, type="A") {
 
     $typeNum = $queryTypes.$type
     if ($typeNum = $lib.null) {
-        $lib.log.warning(`Invalid DNS query type passed to gormo.dns.lib.query {$type}`)
+        $lib.log.warning(`Invalid DNS query type passed to dns.request.lib.query {$type}`)
         stop
     }
 

@@ -14,14 +14,14 @@ class DnsStormTest(s_test.StormPkgTest):
         async with self.getTestCore() as core:
 
             queries = [
-                "gormo.dns --query google.com",
-                "gormo.dns --query google.com --type NS",
-                "gormo.dns --query google.com --type MX",
-                "[inet:fqdn=google.com] | gormo.dns --type TXT",
-                "gormo.dns --query google.com --type AAAA",
-                "[inet:ipv4=1.1.1.1 inet:ipv4=8.8.8.8] | gormo.dns --type PTR",
+                "dns.request --query google.com",
+                "dns.request --query google.com --type NS",
+                "dns.request --query google.com --type MX",
+                "[inet:fqdn=google.com] | dns.request --type TXT",
+                "dns.request --query google.com --type AAAA",
+                "[inet:ipv4=1.1.1.1 inet:ipv4=8.8.8.8] | dns.request --type PTR",
                 # TODO Get working examples of these
-                # "gormo.dns --query google.com --type CNAME",
+                # "dns.request --query google.com --type CNAME",
             ]
 
             for query in queries:

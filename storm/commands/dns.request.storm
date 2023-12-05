@@ -1,5 +1,5 @@
 init {
-    $dnslib = $lib.import(gormo.dns.lib)
+    $dnslib = $lib.import(dns.request.lib)
     // TODO - cast query to an inet:fqdn (or an inet:ipv4 for ptr?) so we can error on bad input
     $queryOpt = $cmdopts.query
     // TODO - validate type on init

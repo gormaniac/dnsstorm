@@ -1,5 +1,5 @@
 name: dns-storm
-version: 0.1.0
+version: 1.0.0
 guid: 55d397b5e6b5042077105ec0c803ab5e
 
 synapse_minversion: [2, 127, 0]
@@ -14,10 +14,10 @@ author:
 desc: A Rapid Power-Up that provides DNS over HTTPS using Cloudflare's 1.1.1.1 service.
 
 modules:
-  - name: gormo.dns.lib
+  - name: dns.request.lib
 
 commands:
-  - name: gormo.dns
+  - name: dns.request
     descr: |
       Query Cloudflare's DNS over HTTPS service for the input FQDNs.
 
@@ -26,14 +26,14 @@ commands:
       Examples:
 
         // Lift some inet:fqdn nodes and query their AAAA records
-        inet:fqdn | limit 5 | gormo.dns --type AAAA
+        inet:fqdn | limit 5 | dns.request --type AAAA
 
         // Make a DNS query using string input and then pivot to the inet:ipv4
         // nodes corresponding to the DNS A records in the query's response
-        gormo.dns --query google.com | :a -> inet:dns:a :ipv4 -> inet:ipv4
+        dns.request --query google.com | :a -> inet:dns:a :ipv4 -> inet:ipv4
 
         // Lift an inet:ipv4 and make a reverse DNS query
-        inet:ipv4=1.1.1.1 | gormo.dns --type PTR
+        inet:ipv4=1.1.1.1 | dns.request --type PTR
 
     cmdargs:
       - - --query
@@ -51,7 +51,7 @@ commands:
             The type of DNS query to make (A, TXT, NS, etc.).
 
             Defaults to DNS A records. See the mapping of supported query
-            types in the `gormo.dns.lib.storm` file.
+            types in the `dns.request.lib.storm` file.
             
             See the following link for further information on DNS query types:
             https://en.wikipedia.org/wiki/List_of_DNS_record_types
