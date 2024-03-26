@@ -1,4 +1,7 @@
 # dnsstorm
+
+**This project is now maintained as part of the [StormLib++](https://github.com/gormaniac/stormlibpp/) project! It is available [here](https://github.com/gormaniac/stormlibpp/tree/main/src/pkgs/dnsstorm).**
+
 A Synapse Rapid Power-Up that brings DNS over HTTPS capabilities to a Cortex using Clourdflare.
 
 Adds a `dns.request` Storm command to a Cortex that takes inbound `inet:fqdn` or `inet:ipv4` nodes and yields `inet:dns:answer` nodes. Querying by string value is also supported instead of using existing nodes.
